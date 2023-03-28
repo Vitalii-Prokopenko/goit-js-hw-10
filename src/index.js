@@ -1,6 +1,8 @@
 import './css/styles.css';
-import { fetchCountries } from './js/fetchCountries';
 import debounce from 'lodash.debounce';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { fetchCountries } from './js/fetchCountries';
+import { markupCountry, markupCountryList } from './js/markupCountry';
 
 const DEBOUNCE_DELAY = 300;
 
@@ -13,6 +15,15 @@ export { countryList, countryInfo };
 
 body.style.backgroundColor = '#DCDCDC';
 
+// Custom styles for notifications
+
+Notify.init({
+  position: 'center-center',
+  showOnlyTheLastOne: true,
+  timeout: 2000,
+  fontSize: '20px',
+});
+
 // Function to handle input
 
 const handleInput = event => {
@@ -21,7 +32,28 @@ const handleInput = event => {
     countryInfo.innerHTML = '';
   } else {
     const inputTextCleared = event.currentTarget.value.trim();
-    fetchCountries(inputTextCleared);
+
+    fetchCountries(inputTextCleared)
+      .then(data => {
+        const countries = data;
+        const numberOfCountries = data.length;
+
+        if (numberOfCountries > 10) {
+          Notify.info(
+            'Too many matches found. Please enter a more specific name.'
+          );
+        } else if (numberOfCountries > 1) {
+          markupCountryList(countries);
+        } else if (numberOfCountries === 1) {
+          markupCountry(data[0]);
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        Notify.failure('Oops, there is no country with that name');
+        countryList.innerHTML = '';
+        countryInfo.innerHTML = '';
+      });
   }
 };
 
