@@ -57,6 +57,8 @@ const handleInput = event => {
   }
 };
 
+// Input listener
+
 searchBox.addEventListener(
   'input',
   debounce(handleInput, DEBOUNCE_DELAY, {
